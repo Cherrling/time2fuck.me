@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time 2 Fuck Me!</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: #f0f2f5;
+        }
+        
+        .container {
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .timer {
+            font-size: 5rem;
+            font-weight: bold;
+            margin: 2rem 0;
+            font-variant-numeric: tabular-nums;
+            font-family: monospace;
+        }
+        
+        button {
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background: #1677ff;
+            color: white;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #4096ff;
+        }
+        
+        .status {
+            margin-top: 1rem;
+            color: #666;
+        }
+        
+        .start-time {
+            margin: 1rem 0;
+            color: #666;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Time 2 Fuck Me</h1>
+        <h2>使用计时器记录下你本次色色持续的时间吧！</h2>
+        <div class="timer" id="timer">00:00:00</div>
+        <div class="start-time" id="startTimeDisplay"></div>
+        <div>
+            <button onclick="toggleTimer()" id="controlBtn">开始计时</button>
+            <button onclick="resetTimer()">重置</button>
+        </div>
+        <div class="status" id="status"></div>
+    </div>
+
+    <script>
+        let startTime = null;
+        let timerInterval;
+        const timerElement = document.getElementById('timer');
+        const controlBtn = document.getElementById('controlBtn');
+        const statusElement = document.getElementById('status');
+        const startTimeDisplay = document.getElementById('startTimeDisplay');
+
+
+        function updateStartTimeDisplay() {
+            if (startTime) {
+                const startDate = new Date(startTime);
+                startTimeDisplay.textContent = `开始时间：${startDate.toLocaleString()}`;
+            } else {
+                startTimeDisplay.textContent = '';
+            }
+        }
+
+        // 修改 restoreState 函数
+        function restoreState() {
+            const savedStartTime = localStorage.getItem('timerStartTime');
+            if (savedStartTime) {
+                startTime = parseInt(savedStartTime);
+                updateTimer();
+                startTimer();
+                controlBtn.textContent = '停止计时';
+                updateStartTimeDisplay();
+            }
+        }
+
+        // 修改 toggleTimer 函数
+        function toggleTimer() {
+            if (startTime === null) {
+                startTime = Date.now();
+                localStorage.setItem('timerStartTime', startTime);
+                startTimer();
+                controlBtn.textContent = '停止计时';
+                updateStatus('计时开始');
+                updateStartTimeDisplay();
+            } else {
+                clearInterval(timerInterval);
+                localStorage.removeItem('timerStartTime');
+                startTime = null;
+                controlBtn.textContent = '开始计时';
+                updateStatus('计时已停止');
+                updateStartTimeDisplay();
+            }
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            if (startTime === null) return;
+
+            const elapsed = Date.now() - startTime;
+            const hours = Math.floor(elapsed / 3600000);
+            const minutes = Math.floor((elapsed % 3600000) / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+
+            timerElement.textContent = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+        }
+
+        // 修改 resetTimer 函数
+        function resetTimer() {
+            clearInterval(timerInterval);
+            localStorage.removeItem('timerStartTime');
+            startTime = null;
+            timerElement.textContent = '00:00:00';
+            controlBtn.textContent = '开始计时';
+            updateStatus('计时已重置');
+            updateStartTimeDisplay();
+        }
+
+        function pad(number) {
+            return number.toString().padStart(2, '0');
+        }
+
+        function updateStatus(message) {
+            statusElement.textContent = `${message} (${new Date().toLocaleTimeString()})`;
+        }
+
+        // 页面加载时恢复状态
+        restoreState();
+    </script>
+</body>
+
+</html>
